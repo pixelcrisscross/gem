@@ -8,9 +8,9 @@ class PCMRecorderProcessor extends AudioWorkletProcessor {
   process(inputs) {
     const input = inputs[0];
     if (!input || !input[0]) return true;
-    const channel = input[0];
-    for (let i = 0; i < channel.length; i++) {
-      this._buffer[this._index++] = channel[i];
+    const ch = input[0];
+    for (let i = 0; i < ch.length; i++) {
+      this._buffer[this._index++] = ch[i];
       if (this._index >= this._bufferSize) {
         this.port.postMessage({ audio: this._buffer.slice() });
         this._index = 0;

@@ -1,11 +1,7 @@
-"""Marine Intelligence Platform — FastAPI + ADK on Vertex AI."""
+"""Marine Intelligence Platform — FastAPI + ADK Gemini Live API on Vertex AI."""
 
 from __future__ import annotations
-
-import asyncio
-import json
-import logging
-import os
+import asyncio, json, logging, os
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -16,84 +12,127 @@ from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools import google_search
 from google.genai import types
 
 from .tools import (
     check_geofence, check_safety, find_pfz, find_safe_route,
     get_chlorophyll, get_marine_weather, get_ocean_conditions, get_sst,
-    show_marine_map, suggest_followups,
+    show_marine_map, suggest_followups, web_search,
 )
 
-APP_NAME = "marine-concierge"
+APP_NAME = "marine-intelligence"
 STATIC_DIR = Path(__file__).parent / "static"
 MODEL = "gemini-live-2.5-flash-native-audio"
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
-
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Marine Intelligence Platform", version="1.0.0")
+app = FastAPI(title="Marine Intelligence Platform", version="2.0.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-INSTRUCTION = """CRITICAL: Your FIRST and DEFAULT language is ENGLISH. Reply in English unless the user's last message was in another language.
+INSTRUCTION = """You are the Marine Intelligence Platform — a warm, knowledgeable marine assistant for fishermen, coastal authorities, and researchers in India.
 
-You are the Marine Intelligence Platform — an Agentic AI assistant for fishermen, coastal authorities, and researchers.
+# ═══ THE MOST IMPORTANT RULE ═══
+Reply EXACTLY ONCE per user turn, then STOP. Never generate a second reply. Never repeat yourself.
 
-# SPECIALIST TOOLS
-1. OCEAN ANALYTICS — get_ocean_conditions, get_sst, get_chlorophyll (SST, chlorophyll, water quality).
-2. WEATHER & RISK — get_marine_weather, check_safety (wind, waves, swell, safety verdict).
-3. FISHERY INTELLIGENCE — find_pfz (+ google_search for INCOIS advisories).
-4. GEOSPATIAL & NAVIGATION — check_geofence, find_safe_route, show_marine_map.
-5. RESEARCH — google_search for cyclone alerts, IMD bulletins, bioluminescence, news.
-6. CONVERSATION — suggest_followups (call exactly ONCE per user turn).
+# ═══ IDENTITY — NEVER SAY THESE ═══
+NEVER say:
+  • "I am a large language model"
+  • "trained by Google"
+  • "I'm just an AI"
+  • "I cannot access websites"
+  • "I don't have information about that person"
 
-# ROUTING
-- SST / chlorophyll / temperature / water quality → get_ocean_conditions.
-- Weather / waves / wind → get_marine_weather. If user asks "safe" or "go out" → also call check_safety.
-- Fishing / PFZ → find_pfz + google_search (INCOIS bulletin).
-- Safe / boundaries / limits → check_safety + check_geofence.
-- Route / navigation → find_safe_route.
-- Cyclone / lightning / bioluminescence / news → google_search only.
+INSTEAD, when asked who you are:
+  "I'm the Marine Intelligence Platform — an oceanographic AI running on Gemini 2.5 Flash through Google's Vertex AI. I specialise in sea state, weather, fishing zones, and coastal safety."
 
-# MAPS — STRICT RULES
-- Call show_marine_map AT MOST ONCE per turn. Never call it twice for the same location + layer.
-- If get_ocean_conditions / get_chlorophyll / find_pfz already returned a `map` field, DO NOT also call show_marine_map — the map is rendered automatically.
-- Valid layer_type values: 'SST', 'CHL', 'PFZ'. Nothing else.
+When asked what you can do:
+  "I can fetch real-time SST, chlorophyll, waves, wind, and fishing-zone data, check safety, map conditions, and search the web for cyclone alerts."
 
-# SUGGESTIONS — STRICT RULES
-- Call suggest_followups EXACTLY ONCE, at the END of every turn.
-- Exactly 3 suggestions, each ≤ 45 characters.
-- Never call suggest_followups more than once per turn.
+# ═══ PERSONALITY ═══
+Friendly, confident, concise. You sound like a helpful expert, not a robot.
 
-# KNOWN COORDINATES
-Kochi 9.96/76.24 · Chennai 13.10/80.30 · Mumbai 18.92/72.83 · Goa 15.50/73.83 ·
-Vizag 17.69/83.22 · Mangalore 12.87/74.84 · Kolkata 22.57/88.36 ·
-Tuticorin 8.76/78.13 · Kanyakumari 8.09/77.54 · Rameswaram 9.29/79.31 ·
-Paradip 20.26/86.68 · Porbandar 21.64/69.63.
+# ═══ LANGUAGE — MATCH USER'S SCRIPT EXACTLY ═══
+English → English
+हिन्दी → हिन्दी
+Hinglish → Hinglish
+മലയാളം → മലയാളം
+தமிழ் → தமிழ்
+বাংলা → বাংলা
+日本語 → 日本語
+한국어 → 한국어   ("하이" → "안녕하세요! 해양 정보에 대해 무엇을 도와드릴까요?")
+Bhojpuri → Bhojpuri
 
-# STYLE
-- ONE short sentence per reply (≤ 15 words). Example: "Here's the SST for Kochi."
-- Do NOT narrate tool calls or read raw numbers back. The UI displays details.
-- Do NOT invent data. If a tool returns unavailable, say so briefly.
+Never mix languages in one reply unless the user did.
+
+# ═══ SMALL TALK — NO TOOLS ═══
+If the input is a greeting, name, thanks, language test, or random text ("hi", "hello", "Piyush", "thanks", "하이", "Bhojpuri 100", "test"):
+- Reply with ONE short warm sentence in the SAME language.
+- Do NOT call any tool. Do NOT call web_search. Do NOT call suggest_followups.
+- Do NOT ask a marine-specific question.
+
+Examples:
+  "하이!" → "안녕하세요! 해양 정보에 대해 무엇을 도와드릴까요?"
+  "Piyush" → "Hi Piyush! What can I help with — SST, waves, fishing, or safety?"
+  "dikkati na ke da" → "Theek hai, chup ho jaata hoon. Zaroorat ho to bata dena!"
+
+# ═══ ANSWER LENGTH ═══
+- Data questions (SST, waves, weather, PFZ): 2–4 sentences WITH context, not just a number.
+- Safety questions: 3–5 sentences.
+- Small talk: 1 sentence.
+- NEVER reply with just the raw number.
+
+# ═══ SPECIALIST DOMAINS ═══
+1. OCEAN ANALYTICS — get_ocean_conditions, get_sst, get_chlorophyll
+2. WEATHER & RISK — get_marine_weather, check_safety
+3. FISHERY INTELLIGENCE — find_pfz
+4. GEOSPATIAL & NAVIGATION — check_geofence, find_safe_route, show_marine_map
+5. RESEARCH — web_search
+6. CONVERSATION — suggest_followups (once at end of marine turns)
+
+# ═══ ROUTING ═══
+- SST / chlorophyll / temperature → get_ocean_conditions.
+- Weather / waves / wind → get_marine_weather.
+- "Is it safe?" / "go out?" → check_safety + check_geofence.
+- Fishing / PFZ → find_pfz.
+- Cyclone / lightning / bioluminescence / news / "explain X" → web_search.
+- Route / harbour → find_safe_route.
+- Explicit map request → show_marine_map.
+- Greeting / name / random → NO TOOLS.
+
+# ═══ MAP RULES ═══
+- show_marine_map AT MOST ONCE per turn.
+- get_ocean_conditions, get_sst, get_chlorophyll, find_pfz already return a `map` field — do NOT also call show_marine_map after those.
+
+# ═══ WEB SEARCH ═══
+After calling web_search, read `answer_text` and summarise it in 2–4 sentences in your own words. Cite the source names (e.g., "according to IMD and Skymet…"). Do NOT say "check their website".
+
+# ═══ SUGGESTIONS ═══
+Call suggest_followups EXACTLY ONCE per marine turn, at the very end. Same language as your reply. Skip for small talk.
+
+# ═══ KNOWN COORDINATES ═══
+Kochi (9.96, 76.24) · Chennai (13.10, 80.30) · Mumbai (18.92, 72.83) · Goa (15.50, 73.83)
+Vizag (17.69, 83.22) · Mangalore (12.87, 74.84) · Kolkata (22.57, 88.36)
+Tuticorin (8.76, 78.13) · Kanyakumari (8.09, 77.54) · Rameswaram (9.29, 79.31)
+Paradip (20.26, 86.68) · Porbandar (21.64, 69.63)
 """
 
+
 agent = Agent(
-    name="marine_agent",
+    name="marine_commander",
     model=MODEL,
     tools=[
         get_ocean_conditions, get_sst, get_chlorophyll,
         get_marine_weather, check_safety,
         find_pfz,
         check_geofence, find_safe_route, show_marine_map,
-        google_search,
+        web_search,
         suggest_followups,
     ],
     instruction=INSTRUCTION,
@@ -102,19 +141,15 @@ agent = Agent(
 SESSION_SERVICE = InMemorySessionService()
 RUNNER = Runner(app_name=APP_NAME, agent=agent, session_service=SESSION_SERVICE)
 
-# RunConfig: try to cap the LLM loop count; older ADK versions ignore the kwarg.
-_run_cfg_kwargs = {
-    "streaming_mode": StreamingMode.BIDI,
-    "response_modalities": ["AUDIO"],
-}
+_run_kwargs = {"streaming_mode": StreamingMode.BIDI, "response_modalities": ["AUDIO"]}
 try:
-    RUN_CONFIG = RunConfig(**_run_cfg_kwargs, max_llm_calls=8)
+    RUN_CONFIG = RunConfig(**_run_kwargs, max_llm_calls=6)
 except TypeError:
-    RUN_CONFIG = RunConfig(**_run_cfg_kwargs)
+    RUN_CONFIG = RunConfig(**_run_kwargs)
 
 
 @app.on_event("startup")
-async def _on_startup() -> None:
+async def _on_startup():
     logger.info("Marine Intelligence Platform starting")
     logger.info("Project=%s Location=%s Model=%s", PROJECT_ID, LOCATION, MODEL)
     if not PROJECT_ID:
@@ -136,41 +171,34 @@ async def api_config():
     return {"maps_api_key": os.getenv("MAPS_API_KEY", "")}
 
 
-async def _ensure_adk_session(user_id: str, session_id: str) -> None:
+async def _ensure_session(user_id: str, session_id: str):
     existing = await SESSION_SERVICE.get_session(
-        app_name=APP_NAME, user_id=user_id, session_id=session_id
-    )
+        app_name=APP_NAME, user_id=user_id, session_id=session_id)
     if not existing:
         await SESSION_SERVICE.create_session(
-            app_name=APP_NAME, user_id=user_id, session_id=session_id
-        )
+            app_name=APP_NAME, user_id=user_id, session_id=session_id)
 
 
-async def _client_to_agent(ws: WebSocket, queue: LiveRequestQueue) -> None:
+async def _client_to_agent(ws: WebSocket, queue: LiveRequestQueue):
     while True:
-        message = await ws.receive()
-        if message.get("bytes") is not None:
-            queue.send_realtime(
-                types.Blob(mime_type="audio/pcm;rate=16000", data=message["bytes"])
-            )
+        msg = await ws.receive()
+        if msg.get("bytes") is not None:
+            queue.send_realtime(types.Blob(mime_type="audio/pcm;rate=16000", data=msg["bytes"]))
             continue
-        if message.get("text") is None:
+        if msg.get("text") is None:
             continue
         try:
-            payload = json.loads(message["text"])
+            payload = json.loads(msg["text"])
         except json.JSONDecodeError:
             continue
         if payload.get("type") == "text":
             queue.send_content(types.Content(parts=[types.Part(text=payload["text"])]))
 
 
-async def _agent_to_client(ws: WebSocket, user_id: str, session_id: str,
-                            queue: LiveRequestQueue) -> None:
+async def _agent_to_client(ws, user_id, session_id, queue):
     async for event in RUNNER.run_live(
-        user_id=user_id,
-        session_id=session_id,
-        live_request_queue=queue,
-        run_config=RUN_CONFIG,
+        user_id=user_id, session_id=session_id,
+        live_request_queue=queue, run_config=RUN_CONFIG,
     ):
         await ws.send_text(event.model_dump_json(exclude_none=True, by_alias=True))
 
@@ -182,19 +210,19 @@ def _is_disconnect(exc: Exception) -> bool:
 
 
 @app.websocket("/ws/{user_id}/{session_id}")
-async def live_socket(ws: WebSocket, user_id: str, session_id: str) -> None:
+async def live_socket(ws: WebSocket, user_id: str, session_id: str):
     await ws.accept()
-    await _ensure_adk_session(user_id, session_id)
+    await _ensure_session(user_id, session_id)
 
     async def _heartbeat():
         try:
             while True:
-                await asyncio.sleep(20)
+                await asyncio.sleep(15)
                 await ws.send_text('{"type":"ping"}')
         except Exception:
             pass
 
-    hb_task = asyncio.create_task(_heartbeat())
+    hb = asyncio.create_task(_heartbeat())
     queue = LiveRequestQueue()
     try:
         await asyncio.gather(
@@ -204,10 +232,15 @@ async def live_socket(ws: WebSocket, user_id: str, session_id: str) -> None:
     except WebSocketDisconnect:
         logger.info("Client disconnected: %s", session_id)
     except Exception as exc:
+        s = str(exc)
         if _is_disconnect(exc):
             logger.info("Client disconnected: %s", session_id)
+        elif any(t in s for t in ("1006", "1007", "1011", "abnormal closure", "keepalive")):
+            # Upstream Gemini Live socket idle-timeout — normal, frontend reconnects.
+            logger.info("Upstream keepalive timeout on %s (will reconnect): %s",
+                        session_id, s.split(";")[0][:100])
         else:
             logger.error("Stream error on %s: %s", session_id, exc, exc_info=True)
     finally:
-        hb_task.cancel()
+        hb.cancel()
         queue.close()

@@ -1,10 +1,6 @@
 .git
-.gitignore
 .venv
 __pycache__
 *.pyc
-*.pyo
 .env
 *.log
-README.md
-.dockerignore
