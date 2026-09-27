@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marine Intelligence Platform</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script>
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((cfg) => {
+        if (cfg.maps_api_key) {
+          const s = document.createElement("script");
+          s.src = `https://maps.googleapis.com/maps/api/js?key=${cfg.maps_api_key}&libraries=places`;
+          s.async = true;
+          s.defer = true;
+          document.head.appendChild(s);
+        }
+      })
+      .catch(() => {});
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Marine Intelligence <span id="tagline">— Your AI oceanographic assistant</span></h1>
+      <div id="status-wrap">
+        <button id="status" type="button">Disconnected</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- LEFT: Chat -->
+      <section id="chat">
+        <div id="chat-header">
+          <h2>Marine Chat</h2>
+          <p>Your oceanographic assistant</p>
+        </div>
+
+        <div id="messages">
+          <div class="chat-empty">
+            <h3>Start a conversation</h3>
+            <p>Ask by voice or text after pressing the mic.</p>
+          </div>
+        </div>
+
+        <div id="try-asking">
+          <p class="label">TRY ASKING</p>
+          <button class="suggestion-btn" data-suggestion="What is the sea surface temperature near Kochi?">What is the sea surface temperature near Kochi?</button>
+          <button class="suggestion-btn" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">Where is the nearest fishing zone?</button>
+          <button class="suggestion-btn" data-suggestion="Is it safe to venture into the sea tomorrow morning?">Is it safe to go out to sea tomorrow?</button>
+          <button class="suggestion-btn" data-suggestion="What is the marine weather near Mumbai?">What is the marine weather near Mumbai?</button>
+          <button class="suggestion-btn" data-suggestion="Are there any cyclone alerts near the Bay of Bengal?">Any cyclone alerts near the Bay of Bengal?</button>
+          <button class="suggestion-btn" data-suggestion="Show me the chlorophyll concentration near Vizag.">Chlorophyll concentration near Vizag</button>
+        </div>
+
+        <div id="input-area">
+          <div id="mic-row">
+            <span class="material-symbols-outlined mic-icon">mic</span>
+            <select id="audio-device-select"><option>Default microphone</option></select>
+          </div>
+          <div id="input-bar">
+            <span class="material-symbols-outlined input-icon">keyboard</span>
+            <input type="text" id="text-input" placeholder="Ask your marine assistant..." autocomplete="off" />
+            <button id="start-btn" title="Start voice"><span class="material-symbols-outlined">mic</span></button>
+            <button id="send-btn" title="Send"><span class="material-symbols-outlined">send</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Research -->
+      <section id="research">
+        <div id="research-header">
+          <h2>Research &amp; Results</h2>
+          <div id="research-underline"></div>
+        </div>
+        <div id="researchCards">
+          <div class="empty-state">
+            <span class="material-symbols-outlined" style="font-size:56px;opacity:.35;">travel_explore</span>
+            <p>Ask a question and grounding results will appear here.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>Marine Intelligence Platform · Powered by Vertex AI</footer>
+  </div>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
