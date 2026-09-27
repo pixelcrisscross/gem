@@ -5,7 +5,6 @@ class PCMRecorderProcessor extends AudioWorkletProcessor {
     this._buffer = new Float32Array(this._bufferSize);
     this._index = 0;
   }
-
   process(inputs) {
     const input = inputs[0];
     if (!input || !input[0]) return true;
@@ -20,5 +19,4 @@ class PCMRecorderProcessor extends AudioWorkletProcessor {
     return true;
   }
 }
-
 registerProcessor("pcm-recorder-processor", PCMRecorderProcessor);

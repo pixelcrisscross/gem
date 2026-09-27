@@ -3,17 +3,15 @@ class PCMPlayerProcessor extends AudioWorkletProcessor {
     super();
     this.bufferSize = 24000 * 180;
     this.buffer = new Float32Array(this.bufferSize);
-    this.writeIndex = 0;
-    this.readIndex = 0;
-
+    this.writeIndex = 0; this.readIndex = 0;
     this.port.onmessage = (event) => {
       if (event.data && event.data.command === "endOfAudio") {
         this.readIndex = this.writeIndex;
         return;
       }
-      const int16Samples = new Int16Array(event.data);
-      for (let i = 0; i < int16Samples.length; i++) {
-        this.buffer[this.writeIndex] = int16Samples[i] / 32768;
+      const i16 = new Int16Array(event.data);
+      for (let i = 0; i < i16.length; i++) {
+        this.buffer[this.writeIndex] = i16[i] / 32768;
         this.writeIndex = (this.writeIndex + 1) % this.bufferSize;
         if (this.writeIndex === this.readIndex) {
           this.readIndex = (this.readIndex + 1) % this.bufferSize;
@@ -21,7 +19,6 @@ class PCMPlayerProcessor extends AudioWorkletProcessor {
       }
     };
   }
-
   process(inputs, outputs) {
     const output = outputs[0];
     const frames = output[0].length;
@@ -35,5 +32,4 @@ class PCMPlayerProcessor extends AudioWorkletProcessor {
     return true;
   }
 }
-
 registerProcessor("pcm-player-processor", PCMPlayerProcessor);

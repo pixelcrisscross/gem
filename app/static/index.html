@@ -24,32 +24,26 @@
 <body>
   <div id="app">
     <header>
-      <h1>Marine Intelligence <span id="tagline">— Your AI oceanographic assistant</span></h1>
+      <h1>Marine Intelligence <span id="tagline">— Your AI oceanographic lens</span></h1>
       <div id="status-wrap">
         <button id="status" type="button">Disconnected</button>
       </div>
     </header>
 
     <main>
-      <!-- LEFT: Chat -->
       <section id="chat">
         <div id="chat-header">
           <h2>Marine Chat</h2>
           <p>Your oceanographic assistant</p>
         </div>
 
-        <div id="messages">
-          <div class="chat-empty">
-            <h3>Start a conversation</h3>
-            <p>Ask by voice or text after pressing the mic.</p>
-          </div>
-        </div>
+        <div id="messages"></div>
 
         <div id="try-asking">
           <p class="label">TRY ASKING</p>
           <button class="suggestion-btn" data-suggestion="What is the sea surface temperature near Kochi?">What is the sea surface temperature near Kochi?</button>
           <button class="suggestion-btn" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">Where is the nearest fishing zone?</button>
-          <button class="suggestion-btn" data-suggestion="Is it safe to venture into the sea tomorrow morning?">Is it safe to go out to sea tomorrow?</button>
+          <button class="suggestion-btn" data-suggestion="Is it safe to venture into the sea tomorrow morning near Goa?">Is it safe to go out to sea tomorrow?</button>
           <button class="suggestion-btn" data-suggestion="What is the marine weather near Mumbai?">What is the marine weather near Mumbai?</button>
           <button class="suggestion-btn" data-suggestion="Are there any cyclone alerts near the Bay of Bengal?">Any cyclone alerts near the Bay of Bengal?</button>
           <button class="suggestion-btn" data-suggestion="Show me the chlorophyll concentration near Vizag.">Chlorophyll concentration near Vizag</button>
@@ -69,7 +63,6 @@
         </div>
       </section>
 
-      <!-- RIGHT: Research -->
       <section id="research">
         <div id="research-header">
           <h2>Research &amp; Results</h2>
