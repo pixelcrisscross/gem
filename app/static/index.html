@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#050d1a" />
-<title>Marine Intelligence · Oceanographic AI</title>
+<meta name="theme-color" content="#03111F" />
+<title>SAMUDRA AI · Ocean Intelligence Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
 </head>
 <body>
 
-<!-- Ambient ocean background -->
+<!-- Ambient Ocean Background -->
 <div class="ocean-bg" aria-hidden="true">
   <div class="ocean-glow glow-1"></div>
   <div class="ocean-glow glow-2"></div>
@@ -31,133 +31,383 @@
   <div class="ocean-noise"></div>
 </div>
 
-<div id="app">
-  <header class="topbar glass">
+<!-- Demo Mode Banner -->
+<div id="demo-mode-banner" class="demo-mode-banner">
+  <span class="material-symbols-outlined">info</span>
+  <span><strong>DEMO MODE</strong> — Authentication is simulated. Real ocean data powered by Vertex AI & Copernicus.</span>
+</div>
+
+<!-- SCREEN 1: LANDING PAGE -->
+<section id="screen-landing" class="screen-view active">
+  <header class="landing-nav glass">
     <div class="brand">
       <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14"
-                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="brand-text">
-        <h1>Marine Intelligence</h1>
-        <span>Oceanographic AI · Vertex · Copernicus</span>
+        <h1>SAMUDRA AI</h1>
+        <span>OCEAN INTELLIGENCE</span>
       </div>
     </div>
-    <div class="topbar-actions">
-      <button id="new-chat-btn" class="ghost-btn" title="New session">
-        <span class="material-symbols-outlined">restart_alt</span><span>New</span>
-      </button>
-      <div id="status-pill" class="status-pill">
-        <span class="dot"></span><span id="status-text">Connecting</span>
-      </div>
+    <div class="landing-nav-actions">
+      <button id="landing-auth-btn" class="ghost-btn">Sign In</button>
+      <button id="landing-explore-btn" class="primary-btn">Start Exploring</button>
     </div>
   </header>
 
-  <main class="workspace">
-    <section class="chat-panel glass">
-      <div class="chat-head">
-        <div>
-          <h2>Marine Chat</h2>
-          <p>Ask about SST, waves, fishing zones, weather, or safety.</p>
+  <div class="landing-hero">
+    <div class="landing-hero-content">
+      <div class="badge-tag"><span class="bullet"></span>AI-POWERED OCEAN COMPANION</div>
+      <h1 class="hero-headline">Your intelligent companion for the ocean.</h1>
+      <p class="hero-subtext">
+        Explore real-time marine conditions, understand oceanographic data, check safety advisories, locate potential fishing zones, and ask questions using natural language.
+      </p>
+      <div class="hero-actions">
+        <button id="hero-start-btn" class="primary-btn large">
+          <span class="material-symbols-outlined">explore</span>
+          <span>Start Exploring</span>
+        </button>
+        <button id="hero-voice-btn" class="voice-btn large">
+          <span class="material-symbols-outlined">graphic_eq</span>
+          <span>Try Voice Assistant</span>
+        </button>
+      </div>
+    </div>
+    <div class="landing-hero-visual">
+      <div class="hero-orb">
+        <div class="orb-ring ring-1"></div>
+        <div class="orb-ring ring-2"></div>
+        <div class="orb-ring ring-3"></div>
+        <div class="orb-core">
+          <span class="material-symbols-outlined">tsunami</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 2: AUTH DEMO PAGE -->
+<section id="screen-auth" class="screen-view hidden">
+  <div class="auth-container glass">
+    <div class="auth-left">
+      <div class="brand-mark large">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>SAMUDRA AI</h2>
+      <p>Your intelligent companion for the ocean.</p>
+    </div>
+    <div class="auth-right">
+      <h3>Welcome to SAMUDRA AI</h3>
+      <p class="auth-sub">Sign in to access real-time marine intelligence.</p>
+
+      <div class="auth-buttons">
+        <button class="auth-btn demo-login-btn" data-provider="Google">
+          <span class="auth-icon">G</span><span>Continue with Google</span>
+        </button>
+        <button class="auth-btn demo-login-btn" data-provider="Microsoft">
+          <span class="auth-icon">M</span><span>Continue with Microsoft</span>
+        </button>
+        <button class="auth-btn demo-login-btn" data-provider="Apple">
+          <span class="auth-icon"></span><span>Continue with Apple</span>
+        </button>
+        <div class="auth-divider"><span>or</span></div>
+        <button class="auth-btn guest demo-login-btn" data-provider="Guest">
+          <span class="material-symbols-outlined">person</span><span>Continue as Guest</span>
+        </button>
+      </div>
+      <p class="auth-disclaimer">Demo Experience • Authentication is simulated for preview.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 3: MAIN SAMUDRA AI APPLICATION -->
+<section id="screen-app" class="screen-view hidden">
+  <div id="app" class="view-home">
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="brand-mark" id="app-brand-btn" title="Back to AI Home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SAMUDRA AI</h1>
+          <span>OCEAN INTELLIGENCE</span>
         </div>
       </div>
 
-      <div id="messages" class="messages" aria-live="polite">
-        <div class="empty-chat">
-          <div class="empty-chat-icon"><span class="material-symbols-outlined">tsunami</span></div>
-          <h3>Start a conversation</h3>
-          <p>Type a question. Tap the mic when you'd like to switch to voice mode.</p>
-        </div>
-      </div>
+      <!-- Main Navigation Tabs (Desktop & Tablet) -->
+      <nav class="main-nav" role="tablist" aria-label="Main Navigation">
+        <button class="nav-tab active" data-nav="home">Home</button>
+        <button class="nav-tab" data-nav="chat">Conversation</button>
+        <button class="nav-tab" data-nav="explore">Explore</button>
+        <button class="nav-tab" data-nav="map">Ocean Map</button>
+      </nav>
 
-      <div id="try-asking" class="try-asking">
-        <p class="eyebrow">Try asking</p>
-        <div class="try-grid">
-          <button class="chip-suggestion" data-suggestion="What is the sea surface temperature near Kochi?">
-            <span class="material-symbols-outlined">water_drop</span><span>SST near Kochi</span></button>
-          <button class="chip-suggestion" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">
-            <span class="material-symbols-outlined">phishing</span><span>Nearest PFZ · Chennai</span></button>
-          <button class="chip-suggestion" data-suggestion="Is it safe to venture into the sea tomorrow morning near Goa?">
-            <span class="material-symbols-outlined">shield</span><span>Safe out · Goa</span></button>
-          <button class="chip-suggestion" data-suggestion="What is the marine weather near Mumbai?">
-            <span class="material-symbols-outlined">air</span><span>Weather · Mumbai</span></button>
-          <button class="chip-suggestion" data-suggestion="Show me the chlorophyll concentration near Vizag.">
-            <span class="material-symbols-outlined">eco</span><span>Chlorophyll · Vizag</span></button>
-          <button class="chip-suggestion" data-suggestion="Are there any cyclone alerts near the Bay of Bengal?">
-            <span class="material-symbols-outlined">cyclone</span><span>Cyclone alerts</span></button>
+      <div class="topbar-actions">
+        <button id="topbar-voice-btn" class="ghost-btn voice-accent" title="Start Voice Assistant">
+          <span class="material-symbols-outlined">graphic_eq</span><span class="hide-mobile">Voice</span>
+        </button>
+        <button id="new-chat-btn" class="ghost-btn" title="New Session">
+          <span class="material-symbols-outlined">restart_alt</span><span class="hide-mobile">New</span>
+        </button>
+        <div id="status-pill" class="status-pill">
+          <span class="dot"></span><span id="status-text">Connecting</span>
         </div>
-      </div>
-
-      <div class="composer">
-        <div class="composer-inner">
-          <input type="text" id="text-input" placeholder="Ask your marine assistant…" autocomplete="off" />
-          <button id="start-btn" class="icon-btn voice" title="Switch to voice mode">
-            <span class="material-symbols-outlined">mic</span>
+        <!-- User Profile Menu -->
+        <div class="profile-container">
+          <button id="profile-btn" class="profile-btn" aria-label="User Profile">
+            <span class="material-symbols-outlined">account_circle</span>
           </button>
-          <button id="send-btn" class="icon-btn primary" title="Send">
-            <span class="material-symbols-outlined">arrow_upward</span>
-          </button>
+          <div id="profile-menu" class="profile-menu glass hidden">
+            <div class="profile-header">
+              <strong id="profile-name">Guest Explorer</strong>
+              <span id="profile-status">Demo User</span>
+            </div>
+            <ul class="menu-list">
+              <li><button id="menu-explore-btn"><span class="material-symbols-outlined">explore</span>Explore Ocean</button></li>
+              <li><button id="menu-voice-btn"><span class="material-symbols-outlined">graphic_eq</span>Voice Assistant</button></li>
+              <li><button id="menu-signout-btn"><span class="material-symbols-outlined">logout</span>Sign Out</button></li>
+            </ul>
+          </div>
         </div>
       </div>
-    </section>
+    </header>
 
-    <section class="research-panel">
-      <div class="research-head">
-        <div class="research-title">
-          <h2>Research &amp; Results</h2>
-          <div class="underline"></div>
-        </div>
-        <div class="research-controls">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="map">Maps</button>
-          <button class="filter-btn" data-filter="data">Data</button>
-          <button class="filter-btn" data-filter="sources">Sources</button>
-          <button class="icon-btn subtle" id="clear-research-btn" title="Clear">
-            <span class="material-symbols-outlined">delete_sweep</span>
-          </button>
-        </div>
-      </div>
-      <div id="researchCards" class="research-cards">
-        <div class="empty-research">
-          <div class="empty-research-icon"><span class="material-symbols-outlined">travel_explore</span></div>
-          <h3>Nothing to show yet</h3>
-          <p>Ask a question and grounding results will appear here — maps, data, and sources.</p>
-        </div>
-      </div>
-    </section>
-  </main>
+    <main class="workspace">
+      <!-- VIEW 1: AI HOME (Modern Copilot-style Prompt Home) -->
+      <div id="ai-home-view" class="app-view active">
+        <div class="ai-home-content">
+          <div class="home-orb">
+            <span class="material-symbols-outlined">tsunami</span>
+          </div>
+          <h2 class="home-greeting">How can I help you understand the ocean?</h2>
+          
+          <div class="home-prompt-box glass">
+            <input type="text" id="home-text-input" placeholder="Ask anything about the ocean…" autocomplete="off" />
+            <div class="home-prompt-actions">
+              <button id="home-mic-btn" class="icon-btn voice" title="Switch to Voice Mode">
+                <span class="material-symbols-outlined">mic</span>
+              </button>
+              <button id="home-send-btn" class="icon-btn primary" title="Send Question">
+                <span class="material-symbols-outlined">arrow_upward</span>
+              </button>
+            </div>
+          </div>
 
-  <footer class="statusbar glass">
-    <span class="footer-item"><span class="bullet"></span>Copernicus Marine</span>
-    <span class="footer-item"><span class="bullet"></span>NOAA ERDDAP</span>
-    <span class="footer-item"><span class="bullet"></span>Open-Meteo</span>
-    <span class="footer-item"><span class="bullet"></span>Web Search</span>
-    <span class="footer-spacer"></span>
-    <span class="footer-item muted">Vertex AI · Gemini 2.5 Flash Native Audio</span>
-  </footer>
+          <div class="home-topics">
+            <p class="eyebrow">TRY ASKING</p>
+            <div class="topics-grid">
+              <button class="chip-suggestion" data-suggestion="What is the sea surface temperature near Kochi?">
+                <span class="material-symbols-outlined">water_drop</span><span>What's the sea condition near Kochi?</span>
+              </button>
+              <button class="chip-suggestion" data-suggestion="Is it safe to venture into the sea tomorrow near Goa?">
+                <span class="material-symbols-outlined">shield</span><span>Is it safe to go fishing today?</span>
+              </button>
+              <button class="chip-suggestion" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">
+                <span class="material-symbols-outlined">phishing</span><span>Find potential fishing zones</span>
+              </button>
+              <button class="chip-suggestion" data-suggestion="What is the marine weather near Mumbai?">
+                <span class="material-symbols-outlined">air</span><span>Show me the wave conditions</span>
+              </button>
+              <button class="chip-suggestion" data-suggestion="Show me the chlorophyll concentration near Vizag.">
+                <span class="material-symbols-outlined">eco</span><span>Explain the ocean conditions</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: AI CONVERSATION VIEW -->
+      <div id="ai-chat-view" class="app-view hidden">
+        <div class="chat-container-split">
+          <section class="chat-panel glass">
+            <div class="chat-head">
+              <h2>Operational AI Companion</h2>
+              <p>Ask about SST, waves, fishing zones, safety advisories, and weather.</p>
+            </div>
+
+            <div id="messages" class="messages" aria-live="polite">
+              <div class="empty-chat">
+                <div class="empty-chat-icon"><span class="material-symbols-outlined">tsunami</span></div>
+                <h3>SAMUDRA AI Conversation</h3>
+                <p>Ask a question to start. Progressive marine intelligence cards will appear as responses arrive.</p>
+              </div>
+            </div>
+
+            <div id="try-asking" class="try-asking">
+              <p class="eyebrow">Quick Questions</p>
+              <div class="try-grid">
+                <button class="chip-suggestion" data-suggestion="What is the sea surface temperature near Kochi?">
+                  <span class="material-symbols-outlined">water_drop</span><span>SST near Kochi</span></button>
+                <button class="chip-suggestion" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">
+                  <span class="material-symbols-outlined">phishing</span><span>Nearest PFZ · Chennai</span></button>
+                <button class="chip-suggestion" data-suggestion="Is it safe to venture into the sea tomorrow morning near Goa?">
+                  <span class="material-symbols-outlined">shield</span><span>Safe out · Goa</span></button>
+                <button class="chip-suggestion" data-suggestion="What is the marine weather near Mumbai?">
+                  <span class="material-symbols-outlined">air</span><span>Weather · Mumbai</span></button>
+              </div>
+            </div>
+
+            <div class="composer">
+              <div class="composer-inner">
+                <input type="text" id="text-input" placeholder="Ask SAMUDRA AI…" autocomplete="off" />
+                <button id="start-btn" class="icon-btn voice" title="Switch to Voice Mode">
+                  <span class="material-symbols-outlined">mic</span>
+                </button>
+                <button id="send-btn" class="icon-btn primary" title="Send message">
+                  <span class="material-symbols-outlined">arrow_upward</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="research-panel">
+            <div class="research-head">
+              <div class="research-title">
+                <h2>Progressive Intelligence</h2>
+                <div class="underline"></div>
+              </div>
+              <div class="research-controls">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="map">Maps</button>
+                <button class="filter-btn" data-filter="data">Data</button>
+                <button class="filter-btn" data-filter="sources">Sources</button>
+                <button class="icon-btn subtle" id="clear-research-btn" title="Clear cards">
+                  <span class="material-symbols-outlined">delete_sweep</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="researchCards" class="research-cards">
+              <div class="empty-research">
+                <div class="empty-research-icon"><span class="material-symbols-outlined">travel_explore</span></div>
+                <h3>Contextual Intelligence Feed</h3>
+                <p>Live satellite overlays, safety verdicts, ocean metrics, and data sources will progressively appear here.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- VIEW 3: EXPLORE PAGE -->
+      <div id="ai-explore-view" class="app-view hidden">
+        <div class="explore-container">
+          <div class="explore-header">
+            <h2>Explore Ocean Intelligence</h2>
+            <p>Select a marine domain to explore real-time environmental data and spatial forecasts.</p>
+          </div>
+
+          <div class="explore-grid">
+            <div class="explore-card chip-suggestion" data-suggestion="What is the current ocean condition and SST near Kochi?">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">water_drop</span></div>
+              <h3>Ocean Conditions</h3>
+              <p>Explore Sea Surface Temperature (°C) and Chlorophyll-a concentration from satellite observations.</p>
+            </div>
+            <div class="explore-card chip-suggestion" data-suggestion="What is the marine weather, wind, and wave height near Mumbai?">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">air</span></div>
+              <h3>Marine Weather</h3>
+              <p>Check wave heights, swell direction, wind speed, gusts, air temperature, and visibility forecasts.</p>
+            </div>
+            <div class="explore-card chip-suggestion" data-suggestion="Where is the nearest Potential Fishing Zone from Chennai?">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">phishing</span></div>
+              <h3>Potential Fishing Zones</h3>
+              <p>Explore environmentally suitable fishing zones derived from INCOIS Chlorophyll & SST criteria.</p>
+            </div>
+            <div class="explore-card chip-suggestion" data-suggestion="Is it safe to venture into the sea near Goa? Check geofence & restricted zones.">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">shield</span></div>
+              <h3>Coastal Marine Safety</h3>
+              <p>Evaluate wave hazards, swell warnings, Indian EEZ boundaries, and Marine Sanctuary restrictions.</p>
+            </div>
+            <div class="explore-card chip-suggestion" data-suggestion="Find a safe route between Kochi (9.96, 76.24) and Goa (15.50, 73.83).">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">route</span></div>
+              <h3>Safe Route Evaluation</h3>
+              <p>Sample sea state risk across 5 navigation waypoints to identify severe wave clusters.</p>
+            </div>
+            <div class="explore-card chip-suggestion" data-suggestion="Show me the interactive Copernicus marine map near Kochi.">
+              <div class="card-icon-wrap"><span class="material-symbols-outlined">map</span></div>
+              <h3>Spatial Satellite Maps</h3>
+              <p>Interactive satellite base maps with live Copernicus Marine (WMTS) tile overlays.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: CONTEXTUAL MAP VIEW -->
+      <div id="ai-map-view" class="app-view hidden">
+        <div class="map-page-container">
+          <div class="map-page-header">
+            <h3>Interactive Satellite Ocean Map</h3>
+            <p>Copernicus WMTS & NOAA WMS spatial layers</p>
+          </div>
+          <div id="full-map-cards-target">
+            <!-- Rendered map cards inserted here -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Navigation Bar -->
+    <nav class="mobile-nav glass" aria-label="Mobile Navigation">
+      <button class="nav-item active" data-tab="home">
+        <span class="material-symbols-outlined">home</span><span>Home</span>
+      </button>
+      <button class="nav-item" data-tab="chat">
+        <span class="material-symbols-outlined">chat</span><span>Chat</span>
+      </button>
+      <button class="nav-item" data-tab="explore">
+        <span class="material-symbols-outlined">explore</span><span>Explore</span>
+      </button>
+      <button class="nav-item voice-tab" data-tab="voice">
+        <span class="material-symbols-outlined">graphic_eq</span><span>Voice</span>
+      </button>
+    </nav>
+
+    <footer class="statusbar glass">
+      <span class="footer-item"><span class="bullet"></span>Copernicus Marine</span>
+      <span class="footer-item"><span class="bullet"></span>NOAA ERDDAP</span>
+      <span class="footer-item"><span class="bullet"></span>Open-Meteo</span>
+      <span class="footer-item"><span class="bullet"></span>Web Search</span>
+      <span class="footer-spacer"></span>
+      <span class="footer-item muted">Vertex AI · Gemini 2.5 Flash Native Audio</span>
+    </footer>
+  </div>
+</section>
+
+<!-- Mobile Bottom Sheet -->
+<div id="mobile-bottom-sheet" class="bottom-sheet hidden" aria-hidden="true">
+  <div class="bottom-sheet-handle"></div>
+  <div class="bottom-sheet-header">
+    <div class="bs-title">
+      <span class="material-symbols-outlined icon-cyan">explore</span>
+      <h3 id="bs-location-title">Selected Location</h3>
+    </div>
+    <button id="bs-close-btn" class="icon-btn subtle"><span class="material-symbols-outlined">close</span></button>
+  </div>
+  <div id="bs-content" class="bottom-sheet-body"></div>
 </div>
 
-<div id="voice-view" class="voice-view hidden" role="dialog" aria-modal="true">
+<!-- VOICE HUD OVERLAY -->
+<div id="voice-view" class="voice-view hidden" role="dialog" aria-modal="true" aria-label="Voice Assistant HUD">
   <div class="aurora aurora-a"></div>
   <div class="aurora aurora-b"></div>
   <div class="aurora aurora-c"></div>
-  <div class="aurora-grain"></div>
-  <div class="aurora-vignette"></div>
 
   <div class="voice-stage">
     <div class="voice-brand">
       <div class="voice-brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14"
-                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M4 12l1-5 5-2 5 2 5-2 1 5M12 5v14" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <span>Marine Intelligence · Voice</span>
+      <span>SAMUDRA AI · Voice Assistant</span>
     </div>
 
-    <div class="voice-orb" id="voice-orb">
+    <div class="voice-orb" id="voice-orb" data-state="idle">
       <div class="voice-orb-ring ring-1"></div>
       <div class="voice-orb-ring ring-2"></div>
       <div class="voice-orb-ring ring-3"></div>
@@ -167,32 +417,27 @@
     </div>
 
     <h1 class="voice-status" id="voice-status-text">I'm listening</h1>
-    <p class="voice-substatus" id="voice-substatus">Speak naturally — the agent will respond in real time.</p>
+    <p class="voice-substatus" id="voice-substatus">Speak naturally — SAMUDRA AI will respond in real time.</p>
     <div class="voice-transcript" id="voice-transcript"></div>
     <div class="voice-hint" id="voice-hint">
       <span class="material-symbols-outlined">keyboard_voice</span>
-      <span>Your words appear here as you speak.</span>
+      <span>Live transcript · Press Esc to exit voice mode</span>
     </div>
   </div>
 
-  <aside class="voice-research" id="voice-research" aria-label="Research results"></aside>
+  <aside class="voice-research" id="voice-research" aria-label="Research Cards"></aside>
 
   <div class="voice-controls" role="group" aria-label="Voice controls">
-    <button id="voice-exit-btn" class="vc-btn" title="Exit voice mode (Esc)">
-      <span class="material-symbols-outlined">close</span></button>
-    <button id="voice-cards-toggle-btn" class="vc-btn active" title="Show cards (C)">
-      <span class="material-symbols-outlined">view_sidebar</span></button>
-    <button id="voice-mute-btn" class="vc-btn active" title="Mute mic (M)">
-      <span class="material-symbols-outlined">mic</span></button>
-    <button id="voice-settings-btn" class="vc-btn" title="Sources">
-      <span class="material-symbols-outlined">tune</span></button>
+    <button id="voice-exit-btn" class="vc-btn" title="Exit voice mode (Esc)"><span class="material-symbols-outlined">close</span></button>
+    <button id="voice-cards-toggle-btn" class="vc-btn active" title="Show cards (C)"><span class="material-symbols-outlined">view_sidebar</span></button>
+    <button id="voice-mute-btn" class="vc-btn active" title="Mute mic (M)"><span class="material-symbols-outlined">mic</span></button>
+    <button id="voice-settings-btn" class="vc-btn" title="Sources"><span class="material-symbols-outlined">tune</span></button>
   </div>
 
   <div id="voice-sources-popover" class="popover hidden">
     <div class="popover-header">
-      <h4>Data sources</h4>
-      <button id="voice-sources-close" class="icon-btn subtle">
-        <span class="material-symbols-outlined">close</span></button>
+      <h4>Data Provenance</h4>
+      <button id="voice-sources-close" class="icon-btn subtle"><span class="material-symbols-outlined">close</span></button>
     </div>
     <ul class="popover-list">
       <li><strong>Copernicus Marine</strong><span>Satellite WMTS overlays · GlobColour L4, GLO PHY 001/024</span></li>

@@ -27,9 +27,40 @@ const voiceStatusText = document.getElementById("voice-status-text");
 const voiceSubstatus  = document.getElementById("voice-substatus");
 const voiceTranscript = document.getElementById("voice-transcript");
 const voiceHint       = document.getElementById("voice-hint");
-const voiceOrbIcon    = document.getElementById("voice-orb-icon");
+/* ═══════════ NEW SCREEN & VIEW DOM REFERENCES ═══════════ */
+const screenLanding      = document.getElementById("screen-landing");
+const screenAuth         = document.getElementById("screen-auth");
+const screenApp          = document.getElementById("screen-app");
+const profileBtn         = document.getElementById("profile-btn");
+const profileMenu        = document.getElementById("profile-menu");
+const profileName        = document.getElementById("profile-name");
+const profileStatus      = document.getElementById("profile-status");
+const homeTextInput      = document.getElementById("home-text-input");
+const homeSendBtn        = document.getElementById("home-send-btn");
+const homeMicBtn         = document.getElementById("home-mic-btn");
+const appBrandBtn        = document.getElementById("app-brand-btn");
+const mobileBottomSheet  = document.getElementById("mobile-bottom-sheet");
+const bsLocationTitle    = document.getElementById("bs-location-title");
+const bsContent          = document.getElementById("bs-content");
+const bsCloseBtn         = document.getElementById("bs-close-btn");
+const topbarVoiceBtn     = document.getElementById("topbar-voice-btn");
+const togglePanelBtn     = document.getElementById("toggle-panel-btn");
+const voiceOrb           = document.getElementById("voice-orb");
+const voiceOrbIcon       = document.getElementById("voice-orb-icon");
 
 /* ═══════════ STATE ═══════════ */
+const UIState = {
+  currentScreen: "app", // "landing" | "auth" | "app"
+  currentView: "home",   // "home" | "chat" | "explore" | "map"
+  activeFilter: "all",
+  isVoiceActive: false,
+  isMicMuted: false,
+  showVoiceCards: true,
+  activeMapId: null,
+  isDemoAuthed: true,
+  userName: "Guest Explorer"
+};
+
 let ws = null;
 let micOn = false;
 let recorder = null;
@@ -66,6 +97,53 @@ function freshBucket() {
 
 const userId    = "user-" + Math.random().toString(36).slice(2, 10);
 const sessionId = "session-" + Math.random().toString(36).slice(2, 10);
+
+/* ═══════════ SCREEN & VIEW NAVIGATION HANDLERS ═══════════ */
+function showScreen(screenName) {
+  UIState.currentScreen = screenName;
+  if (screenLanding) screenLanding.classList.toggle("hidden", screenName !== "landing");
+  if (screenAuth) screenAuth.classList.toggle("hidden", screenName !== "auth");
+  if (screenApp) screenApp.classList.toggle("hidden", screenName !== "app");
+}
+
+function setAppView(viewName) {
+  UIState.currentView = viewName;
+  document.querySelectorAll(".app-view").forEach((v) => v.classList.add("hidden"));
+  
+  const targetView = document.getElementById(`ai-${viewName}-view`);
+  if (targetView) targetView.classList.remove("hidden");
+
+  // Update Navigation Tabs
+  document.querySelectorAll(".main-nav .nav-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.nav === viewName);
+  });
+
+  document.querySelectorAll(".mobile-nav .nav-item").forEach((item) => {
+    if (item.dataset.tab === "voice") return;
+    item.classList.toggle("active", item.dataset.tab === viewName);
+  });
+}
+
+function toggleDesktopPanel() {
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+  UIState.isPanelCollapsed = !UIState.isPanelCollapsed;
+  appEl.classList.toggle("app-panel-collapsed", UIState.isPanelCollapsed);
+}
+
+function openBottomSheet(title, htmlContent) {
+  if (!mobileBottomSheet) return;
+  if (bsLocationTitle) bsLocationTitle.textContent = title || "Selected Location";
+  if (bsContent) bsContent.innerHTML = htmlContent;
+  mobileBottomSheet.classList.remove("hidden");
+  mobileBottomSheet.setAttribute("aria-hidden", "false");
+}
+
+function closeBottomSheet() {
+  if (!mobileBottomSheet) return;
+  mobileBottomSheet.classList.add("hidden");
+  mobileBottomSheet.setAttribute("aria-hidden", "true");
+}
 
 /* ═══════════ TOASTS ═══════════ */
 function showToast(message, kind = "success") {
@@ -477,15 +555,16 @@ function exitVoiceMode() {
 function setVoiceState(state) {
   voiceView.classList.remove("state-listening", "state-speaking", "state-muted");
   voiceView.classList.add(`state-${state}`);
+  if (voiceOrb) voiceOrb.dataset.state = state;
   if (state === "speaking") {
-    voiceStatusText.textContent = "Responding";
-    voiceSubstatus.textContent = "The agent is speaking…";
+    voiceStatusText.textContent = "SAMUDRA AI Responding";
+    voiceSubstatus.textContent = "The assistant is speaking…";
     voiceOrbIcon.textContent = "volume_up";
     if (voiceSpeakTimer) clearTimeout(voiceSpeakTimer);
     voiceSpeakTimer = setTimeout(() => { if (voiceModeActive) setVoiceState("listening"); }, 8000);
   } else if (state === "listening") {
     voiceStatusText.textContent = "I'm listening";
-    voiceSubstatus.textContent = "Speak naturally — the agent will respond in real time.";
+    voiceSubstatus.textContent = "Speak naturally — the assistant will respond in real time.";
     voiceOrbIcon.textContent = "graphic_eq";
     if (voiceSpeakTimer) { clearTimeout(voiceSpeakTimer); voiceSpeakTimer = null; }
   } else if (state === "muted") {
@@ -1015,14 +1094,123 @@ sendBtn.addEventListener("click", sendText);
 textInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendText(); }
 });
-document.querySelectorAll(".chip-suggestion").forEach((btn) => {
-  btn.addEventListener("click", () => { textInput.value = btn.dataset.suggestion || ""; sendText(); });
+
+/* ═══════════ COPILOT-STYLE PRODUCT FLOW LISTENERS ═══════════ */
+// Landing Page Buttons
+document.getElementById("landing-auth-btn")?.addEventListener("click", () => showScreen("auth"));
+document.getElementById("landing-explore-btn")?.addEventListener("click", () => {
+  showScreen("app");
+  setAppView("home");
 });
+document.getElementById("hero-start-btn")?.addEventListener("click", () => {
+  showScreen("app");
+  setAppView("home");
+});
+document.getElementById("hero-voice-btn")?.addEventListener("click", async () => {
+  showScreen("app");
+  try { await enterVoiceMode(); } catch (e) { showToast("Voice mode error: " + e.message, "error"); }
+});
+
+// Demo Auth Buttons
+document.querySelectorAll(".demo-login-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const provider = btn.dataset.provider || "Guest";
+    UIState.isDemoAuthed = true;
+    UIState.userName = provider === "Guest" ? "Guest Explorer" : `${provider} User`;
+    if (profileName) profileName.textContent = UIState.userName;
+    if (profileStatus) profileStatus.textContent = provider === "Guest" ? "Demo Guest" : `${provider} Authenticated`;
+    showToast(`Signed in as ${UIState.userName} (Demo)`, "success");
+    showScreen("app");
+    setAppView("home");
+  });
+});
+
+// Navigation Tabs
+document.querySelectorAll(".main-nav .nav-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const nav = tab.dataset.nav;
+    if (nav) setAppView(nav);
+  });
+});
+
+appBrandBtn?.addEventListener("click", () => setAppView("home"));
+
+// AI Home Prompt Input
+function handleHomePromptSend() {
+  const query = homeTextInput?.value.trim();
+  if (!query) return;
+  textInput.value = query;
+  if (homeTextInput) homeTextInput.value = "";
+  setAppView("chat");
+  sendText();
+}
+
+homeSendBtn?.addEventListener("click", handleHomePromptSend);
+homeTextInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleHomePromptSend(); }
+});
+homeMicBtn?.addEventListener("click", async () => {
+  setAppView("chat");
+  try { await enterVoiceMode(); } catch (e) { showToast("Voice mode error: " + e.message, "error"); }
+});
+
+// Profile Menu Toggle & Actions
+profileBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  profileMenu?.classList.toggle("hidden");
+});
+document.addEventListener("click", () => profileMenu?.classList.add("hidden"));
+
+document.getElementById("menu-explore-btn")?.addEventListener("click", () => setAppView("explore"));
+document.getElementById("menu-voice-btn")?.addEventListener("click", async () => {
+  try { await enterVoiceMode(); } catch (e) { showToast("Voice mode error: " + e.message, "error"); }
+});
+document.getElementById("menu-signout-btn")?.addEventListener("click", () => {
+  UIState.isDemoAuthed = false;
+  showToast("Signed out of demo session", "warning");
+  showScreen("landing");
+});
+
+document.querySelectorAll(".chip-suggestion").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const query = btn.dataset.suggestion || "";
+    textInput.value = query;
+    setAppView("chat");
+    sendText();
+  });
+});
+
+/* ═══════════ RESPONSIVE & NAVIGATION LISTENERS ═══════════ */
+togglePanelBtn?.addEventListener("click", toggleDesktopPanel);
+topbarVoiceBtn?.addEventListener("click", async () => {
+  try { await enterVoiceMode(); } catch (e) { showToast("Voice mode error: " + e.message, "error"); }
+});
+
+document.querySelectorAll(".tablet-switcher .tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const view = btn.dataset.view;
+    if (view) setAppView(view);
+  });
+});
+
+document.querySelectorAll(".mobile-nav .nav-item").forEach((item) => {
+  item.addEventListener("click", async () => {
+    const tab = item.dataset.tab;
+    if (tab === "voice") {
+      try { await enterVoiceMode(); } catch (e) { showToast("Voice mode error: " + e.message, "error"); }
+    } else if (tab) {
+      setAppView(tab);
+    }
+  });
+});
+
+bsCloseBtn?.addEventListener("click", closeBottomSheet);
 
 /* ═══════════ RESEARCH CONTROLS ═══════════ */
 document.querySelectorAll(".filter-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const filter = btn.dataset.filter;
+    UIState.activeFilter = filter;
     document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     researchCards.querySelectorAll(".grounding-card").forEach((card) => {
@@ -1035,8 +1223,8 @@ document.querySelectorAll(".filter-btn").forEach((btn) => {
 clearBtn.addEventListener("click", () => {
   researchCards.innerHTML = `<div class="empty-research">
     <div class="empty-research-icon"><span class="material-symbols-outlined">travel_explore</span></div>
-    <h3>Nothing to show yet</h3>
-    <p>Ask a question and grounding results will appear here — maps, data, and sources.</p>
+    <h3>Operational Intelligence Feed</h3>
+    <p>Grounding results, live satellite maps, marine weather, and data provenance will appear here.</p>
   </div>`;
 });
 
